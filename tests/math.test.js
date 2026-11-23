@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {solve,defaults,cn} from '../src/lib/solver.js';
+import {exactIntegral,nerdamer,specialValues} from '../src/lib/cas.js';
+import {areaPresets,volumePresets} from '../src/lib/presets-original.js';
+const areaAnswers=['1/6','2*sqrt(2)','1/2','32/3','e^2-5','1/3','2','e^2/2-e-1/2','pi/4-log(2)/2','pi/2-1','(e^(pi/2)+1)/2','pi/4-log(2)/2+e-1'];
+const volumeAnswers=['4*pi/3','8*pi/3','32*pi/5','2*pi/15','8*pi','6*pi','pi^2/2','36*pi','pi*(pi^2/4-2)','pi*(e^2-1)/2'];
+for(const [kind,arr,answers] of [['area',areaPresets,areaAnswers],['volume',volumePresets,volumeAnswers]])arr.forEach((p,i)=>test(`${kind} preset ${p.id} returns exact expression`,async()=>{const r=await solve({...p,variable:p.wrt||'x',axis:p.axis||'x-axis',axisValue:p.axisValue||'0'},kind);assert.ok(r.closed);assert.ok(Math.abs(cn(r.exact)-cn(answers[i]))<1e-9);assert.ok(!r.exact.includes('integrate('));}));
+test('special inverse-trig and trig values stay grouped under powers',()=>{assert.ok(Math.abs(cn(specialValues('asin(1)^2'))-Math.PI**2/4)<1e-12);assert.ok(Math.abs(cn(specialValues('cos(pi/6)^2'))-3/4)<1e-12);});
+test('sine exact sqrt answer',async()=>{const r=await solve({...defaults.area,f:'sin(x)',g:'0',a:'0',b:'pi/6'});assert.ok(Math.abs(cn(r.exact)-(1-Math.sqrt(3)/2))<1e-12);assert.match(r.exact,/sqrt\(3\)/);});
+test('horizontal area slices',async()=>{const r=await solve({...defaults.area,f:'y',g:'y^2',variable:'y'});assert.equal(r.exact,'1/6');assert.match(r.formula,/dy/);});
+test('negative height shell yields positive volume',async()=>{const r=await solve({...defaults.volume,f:'-x',g:'0',a:'0',b:'1',axis:'y-axis'},'volume');assert.ok(Math.abs(cn(r.exact)-2*Math.PI/3)<1e-12);});
+test('axis offset uses both boundary radii',async()=>{const r=await solve({...defaults.volume,f:'2',g:'0',a:'0',b:'1',axis:'y=k',axisValue:'-1'},'volume');assert.equal(r.method,'washer');assert.ok(Math.abs(cn(r.exact)-8*Math.PI)<1e-12);});
+test('washer crossing the axis has no hole',async()=>{const r=await solve({...defaults.volume,f:'1',g:'-1',a:'0',b:'1'},'volume');assert.ok(Math.abs(cn(r.exact)-Math.PI)<1e-12);});
+test('swapped outer and inner curves do not negate volume',async()=>{const r=await solve({...defaults.volume,f:'1',g:'2',a:'0',b:'1'},'volume');assert.ok(Math.abs(cn(r.exact)-3*Math.PI)<1e-12);});
+test('shells spanning both sides of the axis are explicitly rejected',async()=>{await assert.rejects(solve({...defaults.volume,f:'1',g:'0',a:'-1',b:'1',axis:'y-axis'},'volume'),e=>e.code==='shellCrossError');});
+test('mixed pi e log inverse trigonometric sqrt expression',async()=>{const r=await solve({...defaults.area,f:'pi+e+ln(x+1)+asin(x/2)+acos(x/2)+atan(x)+sqrt(x+1)',g:'0'});assert.ok(r.closed);for(const token of ['pi','e','log'])assert.ok(r.exact.includes(token));assert.match(r.exact,/sqrt|\^\([^)]*\/2\)/);assert.ok(cn(r.exact)>0);});
+test('invalid bounds and domain are localized error codes',async()=>{await assert.rejects(solve({...defaults.area,a:'2',b:'1'}),e=>e.code==='boundsError');await assert.rejects(solve({...defaults.area,f:'sqrt(-x)',a:'0',b:'1'}),e=>e.code==='domainError');});
+
+test('irrational intersections use exact symbolic breakpoints',async()=>{const r=await solve({...defaults.area,f:'x^2',g:'2',a:'0',b:'2'});assert.ok(r.closed);assert.equal(r.segments.length,2);assert.match(r.segments[0].hiExact,/sqrt|\^/);});
