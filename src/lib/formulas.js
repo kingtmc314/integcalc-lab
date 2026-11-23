@@ -7,5 +7,5 @@ const zh={
 };
 const latexCopy={' on ':' 在 ',' even':' 為偶函數',' odd':' 為奇函數',' periodic (period ':' 為週期函數（週期 ','Example: ':'例子：',' reduces':' 可遞推','IBP':'分部積分',' factor ':' 將 ',' into linear/quadratic factors':' 分解為一次或二次因式','irreducible quadratic':'不可約二次式',' at ':' 於 ',' converges':' 收斂',' use tabular IBP (differentiate ':' 使用表格分部積分（微分 ', ', integrate ':'，積分 ', 'Gaussian':'高斯','Dirichlet':'狄利克雷','Gamma function':'Gamma 函數'};
 export function localFormula(s,language){if(language!=='zh')return s;return zh[s]||s;}
-export function localTex(tex,language){if(language!=='zh')return tex;return tex.replace(/\\text\{([^}]*)\}/g,(_,s)=>`\\text{${latexCopy[s]||s}}`);}
+export function localTex(tex,language){if(language!=='zh')return tex;tex=tex.replace(/n\\text\{ even\}/g,'n\\text{ 為偶數}').replace(/n\\text\{ odd\}/g,'n\\text{ 為奇數}');return tex.replace(/\\text\{([^}]*)\}/g,(_,s)=>`\\text{${latexCopy[s]||s}}`);}
 export {formulaSections,zh};
