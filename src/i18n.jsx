@@ -1,5 +1,6 @@
 import React,{createContext,useContext,useState,useEffect} from 'react';
 const dictionary={
+ theorem:['Theorem','定理'],formulaLabel:['Formula','公式'],viewTheorem:['View theorem','查看定理'],conditions:['Conditions','適用條件'],variableContext:['Variables','符號說明'],solutionMethod:['Solution method','解法'],integrationByParts:['Integration by parts','分部積分'],repeatedByParts:['Repeated integration by parts','重複分部積分'],halfAngle:['Half-angle identity','半角公式'],linearity:['Linearity','線性性質'],splitIntervals:['Split at intersections','交點分段'],methodSearchHelp:['Search by title, function or solution method.','可按題目、函數或解法搜尋。'],referenceGuide:['Theorem numbers link the overview and derivation to this reference. Other entries are labelled as formulas.','定理編號連結首頁與推導步驟；其他條目則標示為公式。'],
  fundamentalNote:['Fundamental theorem of calculus · f continuous on [a,b]','微積分基本定理 · f 在 [a,b] 上連續'],
  crossSectionNote:['S(t): area of a cross section perpendicular to the t-axis.','S(t)：垂直於 t 軸的截面面積。'],
  home:['Overview','總覽'],area:['Area between curves','兩曲線面積'],volume:['Solids of revolution','旋轉體體積'],learn:['Derivation studio','推導動畫室'],presets:['Example library','例題庫'],formulas:['Formula reference','公式參考'],
